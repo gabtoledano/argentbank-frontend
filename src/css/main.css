@@ -60,6 +60,30 @@ body {
   text-decoration: underline;
 }
 
+.main-nav-item button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  color: inherit;
+  padding: 0;
+  margin-right: 0.5rem;
+  text-decoration: none;
+}
+
+.main-nav-item button:hover {
+  text-decoration: underline;
+}
+
+button.main-nav-item {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  color: inherit;
+  padding: 0;
+}
+
 .main-nav-logo {
   display: flex;
   align-items: center;
