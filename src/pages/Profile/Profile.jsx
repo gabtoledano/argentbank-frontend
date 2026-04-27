@@ -1,13 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setUser } from "../../redux/slices/authSlice";
+import { setUser, updateUserName } from "../../redux/slices/authSlice";
 import axios from "axios";
 
 function Profile() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { token, user } = useSelector((state) => state.auth);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newUserName, setNewUserName] = useState("");
 
   useEffect(() => {
     if (!token) {
@@ -28,17 +30,64 @@ function Profile() {
     fetchUser();
   }, [token, dispatch, navigate]);
 
+  const handleEditClick = () => {
+    setNewUserName(user.userName);
+    setIsEditing(true);
+  };
+
+  const handleSave = async () => {
+    try {
+      await axios.put(
+        "http://localhost:3001/api/v1/user/profile",
+        { userName: newUserName },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      dispatch(updateUserName(newUserName));
+      setIsEditing(false);
+    } catch {
+      console.error("Erreur lors de la mise à jour du pseudo");
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
   if (!user) return <p>Loading...</p>;
 
   return (
     <main className="main bg-dark">
       <div className="header">
-        <h1>
-          Welcome back
-          <br />
-          {user.firstName} {user.lastName}!
-        </h1>
-        <button className="edit-button">Edit Name</button>
+        {isEditing ? (
+          <div className="edit-form">
+            <h1>Welcome back</h1>
+            <input
+              type="text"
+              value={newUserName}
+              onChange={(e) => setNewUserName(e.target.value)}
+              className="edit-input"
+            />
+            <div className="edit-buttons">
+              <button className="edit-button" onClick={handleSave}>
+                Save
+              </button>
+              <button className="edit-button" onClick={handleCancel}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <h1>Welcome back</h1>
+            <h1>
+              {user.firstName} {user.lastName}!
+            </h1>
+            <p>{user.userName}</p>
+            <button className="edit-button" onClick={handleEditClick}>
+              Edit Name
+            </button>
+          </div>
+        )}
       </div>
       <h2 className="sr-only">Accounts</h2>
       <section className="account">
