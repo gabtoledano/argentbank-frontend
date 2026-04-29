@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setUser, updateUserName } from "../../redux/slices/authSlice";
+import { fetchUserProfile, updateUserName } from "../../redux/slices/authSlice";
 import Account from "../../components/Account/Account";
-import axios from "axios";
 
 function Profile() {
   const dispatch = useDispatch();
@@ -17,18 +16,7 @@ function Profile() {
       navigate("/login");
       return;
     }
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3001/api/v1/user/profile",
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
-        dispatch(setUser(response.data.body));
-      } catch {
-        navigate("/login");
-      }
-    };
-    fetchUser();
+    dispatch(fetchUserProfile(token));
   }, [token, dispatch, navigate]);
 
   const handleEditClick = () => {
@@ -37,16 +25,11 @@ function Profile() {
   };
 
   const handleSave = async () => {
-    try {
-      await axios.put(
-        "http://localhost:3001/api/v1/user/profile",
-        { userName: newUserName },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      dispatch(updateUserName(newUserName));
+    const result = await dispatch(
+      updateUserName({ token, userName: newUserName }),
+    );
+    if (updateUserName.fulfilled.match(result)) {
       setIsEditing(false);
-    } catch {
-      console.error("Erreur lors de la mise à jour du pseudo");
     }
   };
 

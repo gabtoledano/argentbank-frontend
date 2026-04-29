@@ -1,30 +1,20 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { loginSuccess, setError } from "../../redux/slices/authSlice";
-import axios from "axios";
+import { loginUser } from "../../redux/slices/authSlice";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const error = useSelector((state) => state.auth.error);
+  const { error, loading } = useSelector((state) => state.auth);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post(
-        "http://localhost:3001/api/v1/user/login",
-        {
-          email,
-          password,
-        },
-      );
-      dispatch(loginSuccess({ token: response.data.body.token }));
+    const result = await dispatch(loginUser({ email, password }));
+    if (loginUser.fulfilled.match(result)) {
       navigate("/profile");
-    } catch {
-      dispatch(setError("Invalid email or password"));
     }
   };
 
@@ -53,8 +43,8 @@ function Login() {
             />
           </div>
           {error && <p className="error-message">{error}</p>}
-          <button type="submit" className="sign-in-button">
-            Sign In
+          <button type="submit" className="sign-in-button" disabled={loading}>
+            {loading ? "Loading..." : "Sign In"}
           </button>
         </form>
       </section>
