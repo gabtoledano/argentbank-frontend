@@ -68,6 +68,7 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
+      localStorage.removeItem("token");
     },
   },
   extraReducers: (builder) => {
@@ -81,6 +82,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.token = action.payload;
         state.isAuthenticated = true;
+        localStorage.setItem("token", action.payload);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
