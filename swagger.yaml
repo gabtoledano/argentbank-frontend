@@ -1,0 +1,167 @@
+swagger: "2.0"
+info:
+  title: Argent Bank Transactions API
+  description: API endpoints for bank transactions - Phase 2
+  version: "1.0.0"
+host: localhost:3001
+basePath: /api/v1
+schemes:
+  - http
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+
+paths:
+  /accounts:
+    get:
+      tags:
+        - Accounts
+      summary: Get all user accounts
+      description: Retrieve all bank accounts for the authenticated user
+      security:
+        - Bearer: []
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Successfully retrieved accounts
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /accounts/{accountId}/transactions:
+    get:
+      tags:
+        - Transactions
+      summary: Get all transactions for an account
+      description: Retrieve all transactions for the current month
+      security:
+        - Bearer: []
+      produces:
+        - application/json
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          type: string
+          description: The unique ID of the account
+      responses:
+        200:
+          description: Successfully retrieved transactions
+        401:
+          description: Unauthorized
+        404:
+          description: Account not found
+        500:
+          description: Internal server error
+
+  /accounts/{accountId}/transactions/{transactionId}:
+    get:
+      tags:
+        - Transactions
+      summary: Get transaction details
+      description: Retrieve the details of a specific transaction
+      security:
+        - Bearer: []
+      produces:
+        - application/json
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          type: string
+          description: The unique ID of the account
+        - name: transactionId
+          in: path
+          required: true
+          type: string
+          description: The unique ID of the transaction
+      responses:
+        200:
+          description: Successfully retrieved transaction
+        401:
+          description: Unauthorized
+        404:
+          description: Transaction not found
+        500:
+          description: Internal server error
+
+    put:
+      tags:
+        - Transactions
+      summary: Update transaction category and note
+      description: Update the category and/or note of a transaction
+      security:
+        - Bearer: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          type: string
+          description: The unique ID of the account
+        - name: transactionId
+          in: path
+          required: true
+          type: string
+          description: The unique ID of the transaction
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              category:
+                type: string
+                example: "Food"
+              note:
+                type: string
+                example: "lorem ipsum"
+      responses:
+        200:
+          description: Transaction successfully updated
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        404:
+          description: Transaction not found
+        500:
+          description: Internal server error
+
+  /accounts/{accountId}/transactions/{transactionId}/note:
+    delete:
+      tags:
+        - Transactions
+      summary: Delete transaction note
+      description: Delete the note of a specific transaction
+      security:
+        - Bearer: []
+      produces:
+        - application/json
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          type: string
+          description: The unique ID of the account
+        - name: transactionId
+          in: path
+          required: true
+          type: string
+          description: The unique ID of the transaction
+      responses:
+        200:
+          description: Note successfully deleted
+        401:
+          description: Unauthorized
+        404:
+          description: Note not found
+        500:
+          description: Internal server error
