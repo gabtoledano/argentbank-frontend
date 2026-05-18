@@ -27,8 +27,21 @@ paths:
       responses:
         200:
           description: Successfully retrieved accounts
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Accounts retrieved successfully"
+              body:
+                type: array
+                items:
+                  $ref: "#/definitions/Account"
         401:
-          description: Unauthorized
+          description: Unauthorized - Invalid or missing token
         500:
           description: Internal server error
 
@@ -37,7 +50,7 @@ paths:
       tags:
         - Transactions
       summary: Get all transactions for an account
-      description: Retrieve all transactions for the current month
+      description: Retrieve all transactions for the current month for a specific account
       security:
         - Bearer: []
       produces:
@@ -51,8 +64,21 @@ paths:
       responses:
         200:
           description: Successfully retrieved transactions
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Transactions retrieved successfully"
+              body:
+                type: array
+                items:
+                  $ref: "#/definitions/Transaction"
         401:
-          description: Unauthorized
+          description: Unauthorized - Invalid or missing token
         404:
           description: Account not found
         500:
@@ -63,7 +89,7 @@ paths:
       tags:
         - Transactions
       summary: Get transaction details
-      description: Retrieve the details of a specific transaction
+      description: Retrieve the full details of a specific transaction
       security:
         - Bearer: []
       produces:
@@ -81,19 +107,34 @@ paths:
           description: The unique ID of the transaction
       responses:
         200:
-          description: Successfully retrieved transaction
+          description: Successfully retrieved transaction details
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Transaction retrieved successfully"
+              body:
+                $ref: "#/definitions/TransactionDetail"
         401:
-          description: Unauthorized
+          description: Unauthorized - Invalid or missing token
         404:
           description: Transaction not found
         500:
           description: Internal server error
 
-    put:
+    patch:
       tags:
         - Transactions
-      summary: Update transaction category and note
-      description: Update the category and/or note of a transaction
+      summary: Update or delete transaction category and/or note
+      description: >
+        Partially update a transaction. Both fields are optional.
+        Send only the fields you want to update.
+        To delete the note, send note with a null value.
+        Cannot modify date, description, amount or balance.
       security:
         - Bearer: []
       consumes:
@@ -115,53 +156,123 @@ paths:
           name: body
           required: true
           schema:
-            type: object
-            properties:
-              category:
-                type: string
-                example: "Food"
-              note:
-                type: string
-                example: "lorem ipsum"
+            $ref: "#/definitions/TransactionUpdate"
       responses:
         200:
           description: Transaction successfully updated
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Transaction updated successfully"
+              body:
+                $ref: "#/definitions/TransactionDetail"
         400:
-          description: Bad request
+          description: Bad request - Invalid fields
         401:
-          description: Unauthorized
+          description: Unauthorized - Invalid or missing token
         404:
           description: Transaction not found
         500:
           description: Internal server error
 
-  /accounts/{accountId}/transactions/{transactionId}/note:
-    delete:
-      tags:
-        - Transactions
-      summary: Delete transaction note
-      description: Delete the note of a specific transaction
-      security:
-        - Bearer: []
-      produces:
-        - application/json
-      parameters:
-        - name: accountId
-          in: path
-          required: true
-          type: string
-          description: The unique ID of the account
-        - name: transactionId
-          in: path
-          required: true
-          type: string
-          description: The unique ID of the transaction
-      responses:
-        200:
-          description: Note successfully deleted
-        401:
-          description: Unauthorized
-        404:
-          description: Note not found
-        500:
-          description: Internal server error
+definitions:
+  Account:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique account ID
+        example: "abc123"
+      title:
+        type: string
+        description: Account name
+        example: "Argent Bank Checking (x3448)"
+      amount:
+        type: number
+        description: Current account balance
+        example: 48098.43
+      description:
+        type: string
+        description: Balance type
+        example: "Available Balance"
+
+  Transaction:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique transaction ID
+        example: "txn456"
+      date:
+        type: string
+        format: date
+        description: Transaction date
+        example: "2020-02-27"
+      description:
+        type: string
+        description: Transaction description
+        example: "Golden Sun Bakery"
+      amount:
+        type: number
+        description: Transaction amount
+        example: 8.00
+      balance:
+        type: number
+        description: Account balance after transaction
+        example: 298.00
+
+  TransactionDetail:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique transaction ID
+        example: "txn456"
+      date:
+        type: string
+        format: date
+        description: Transaction date
+        example: "2020-02-27"
+      description:
+        type: string
+        description: Transaction description
+        example: "Golden Sun Bakery"
+      amount:
+        type: number
+        description: Transaction amount
+        example: 8.00
+      balance:
+        type: number
+        description: Account balance after transaction
+        example: 298.00
+      transactionType:
+        type: string
+        description: Type of transaction
+        example: "Electronic"
+      category:
+        type: string
+        description: Transaction category
+        example: "Food"
+      note:
+        type: string
+        description: "User note - null if deleted"
+        example: "lorem ipsum"
+        x-nullable: true
+
+  TransactionUpdate:
+    type: object
+    properties:
+      category:
+        type: string
+        description: "Optional - Transaction category. Omit to leave unchanged."
+        example: "Food"
+      note:
+        type: string
+        description: "Optional - User note. Send null to delete the note."
+        example: "lorem ipsum"
+        x-nullable: true
